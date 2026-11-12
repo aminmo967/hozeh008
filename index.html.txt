@@ -1,0 +1,3389 @@
+<!doctype html>
+<html lang="fa">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+      content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<link rel="stylesheet" href="css/leaflet.css">
+<link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+<link rel="stylesheet" href="css/qgis2web.css">
+<link rel="stylesheet" href="css/fontawesome-all.min.css">
+<link rel="stylesheet" href="css/leaflet-measure.css">
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+
+<style>
+
+html,body{
+    width:100%;
+    height:100%;
+    margin:0;
+    padding:0;
+}
+
+#map{
+    width:100%;
+    height:100vh;
+}
+
+/* ================================================= */
+/* منوی اصلی */
+/* ================================================= */
+
+.group-control{
+    margin-left:8px !important;
+    margin-top:5px !important;
+    direction:ltr;
+}
+
+.group-main-button{
+    width:46px;
+    height:46px;
+    border:1px solid #999;
+    border-radius:9px;
+    background:white;
+    font-size:21px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow:0 2px 5px rgba(0,0,0,.25);
+}
+
+.group-main-button:active{
+    transform:scale(.95);
+}
+
+.group-menu{
+    display:none;
+    width:180px;
+    margin-top:4px;
+    background:rgba(255,255,255,.97);
+    border-radius:9px;
+    padding:4px;
+    box-shadow:0 2px 8px rgba(0,0,0,.3);
+    box-sizing:border-box;
+}
+
+.group-menu.open{
+    display:block;
+}
+
+.category-button{
+    width:100% !important;
+    min-height:45px !important;
+    border:0 !important;
+    border-bottom:1px solid #ddd !important;
+    background:white !important;
+    text-align:right !important;
+    direction:rtl !important;
+    padding:8px 10px !important;
+    font-size:14px !important;
+    cursor:pointer;
+    border-radius:6px !important;
+    font-weight:bold;
+}
+
+.category-button:active{
+    background:#eee !important;
+}
+
+.group-submenu{
+    display:none;
+    margin:3px 0 5px 0;
+}
+
+.group-submenu.open{
+    display:block;
+}
+
+.group-submenu button{
+    width:165px;
+    min-height:40px;
+    margin:2px 0 2px 5px;
+    border:0;
+    background:#f3f3f3;
+    text-align:right;
+    direction:rtl;
+    padding:7px 9px;
+    font-size:13px;
+    cursor:pointer;
+    border-radius:5px;
+}
+
+.group-submenu button:active{
+    background:#ddd;
+}
+
+.kmz-file-input{
+    display:none;
+}
+
+/* ================================================= */
+/* GPS */
+/* ================================================= */
+
+.user-location-marker{
+    position:relative;
+    width:32px;
+    height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.user-location-arrow{
+    width:0;
+    height:0;
+    border-left:9px solid transparent;
+    border-right:9px solid transparent;
+    border-bottom:25px solid #4285F4;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));
+    transform-origin:center center;
+}
+
+.user-location-dot{
+    position:absolute;
+    width:10px;
+    height:10px;
+    background:white;
+    border-radius:50%;
+    box-shadow:0 0 0 2px #4285F4;
+}
+
+.user-accuracy{
+    background:rgba(66,133,244,.12);
+    border:1px solid rgba(66,133,244,.35);
+}
+
+/* ================================================= */
+/* اطلاعات مسیر */
+/* ================================================= */
+
+.route-info-label{
+    background:transparent !important;
+    border:0 !important;
+}
+
+.route-info-box{
+    background:rgba(255,255,255,.95);
+    border:2px solid #0066ff;
+    border-radius:9px;
+    padding:5px 8px;
+    font-family:Arial,sans-serif;
+    font-size:12px;
+    font-weight:bold;
+    color:#222;
+    white-space:nowrap;
+    text-align:center;
+    line-height:18px;
+    box-shadow:0 2px 6px rgba(0,0,0,.30);
+    direction:rtl;
+}
+
+/* ================================================= */
+/* پیام ناوبری */
+/* ================================================= */
+
+.navigation-message-label{
+    background:transparent !important;
+    border:0 !important;
+}
+
+.navigation-message-box{
+    background:rgba(255,255,255,.96);
+    border:2px solid #555;
+    border-radius:8px;
+    padding:5px 9px;
+    font-family:Arial,sans-serif;
+    font-size:12px;
+    font-weight:bold;
+    color:#222;
+    white-space:nowrap;
+    text-align:center;
+    box-shadow:0 2px 6px rgba(0,0,0,.25);
+    direction:rtl;
+}
+
+/* ================================================= */
+/* Popup مسیر */
+/* ================================================= */
+
+.routing-popup{
+    direction:rtl;
+    text-align:center;
+    font-family:Arial,sans-serif;
+    min-width:190px;
+}
+
+.routing-popup-title{
+    font-size:14px;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.routing-popup-buttons{
+    display:flex;
+    gap:7px;
+    justify-content:center;
+}
+
+.routing-popup-button{
+    border:0;
+    border-radius:7px;
+    padding:9px 12px;
+    font-size:13px;
+    cursor:pointer;
+    font-weight:bold;
+    min-width:75px;
+}
+
+.routing-popup-button:active{
+    transform:scale(.96);
+}
+
+.routing-car{
+    background:#e8f0fe;
+}
+
+.routing-foot{
+    background:#e8f5e9;
+}
+
+/* ================================================= */
+/* KMZ */
+/* ================================================= */
+
+.kmz-info{
+    direction:rtl;
+    text-align:right;
+    font-family:Arial;
+    font-size:14px;
+}
+
+/* ================================================= */
+/* دکمه‌های سمت راست */
+/* ================================================= */
+
+.map-side-control{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    margin-top:45px !important;
+    margin-right:5px;
+}
+
+.map-side-button{
+    width:44px;
+    height:44px;
+    border:1px solid #999;
+    border-radius:9px;
+    background:rgba(255,255,255,.94);
+    font-size:21px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow:0 2px 5px rgba(0,0,0,.25);
+    padding:0;
+}
+
+.map-side-button:active{
+    transform:scale(.94);
+    background:#eee;
+}
+
+/* ================================================= */
+/* مختصات */
+/* ================================================= */
+
+.coordinate-info{
+    position:absolute;
+    right:8px;
+    bottom:8px;
+    z-index:1000;
+    min-width:165px;
+    background:rgba(255,255,255,.72);
+    border:1px solid rgba(120,120,120,.45);
+    border-radius:8px;
+    padding:6px 9px;
+    box-shadow:0 1px 5px rgba(0,0,0,.20);
+    direction:ltr;
+    text-align:left;
+    font-family:Arial,sans-serif;
+    font-size:12px;
+    line-height:18px;
+    pointer-events:none;
+    backdrop-filter:blur(2px);
+}
+
+.coordinate-row{
+    white-space:nowrap;
+}
+
+.coordinate-label{
+    font-weight:bold;
+}
+
+.coordinate-value{
+    font-family:monospace;
+}
+
+/* ================================================= */
+/* اندازه‌گیری - اصلاح شده */
+/* ================================================= */
+
+/*
+   خود کنترل اندازه‌گیری نباید مخفی شود.
+   فقط دکمه اصلی آن از صفحه خارج می‌شود،
+   چون دکمه اختصاصی 📏 خودمان آن را باز می‌کند.
+*/
+
+.leaflet-control-measure{
+    max-width:280px;
+    z-index:10000 !important;
+}
+
+/* دکمه اصلی پلاگین مخفی ولی فعال باقی می‌ماند */
+
+.leaflet-control-measure-toggle{
+    position:absolute !important;
+    left:-10000px !important;
+    top:auto !important;
+}
+
+/* پنل اندازه‌گیری */
+
+.leaflet-control-measure-interaction{
+    font-size:13px;
+    direction:rtl;
+    text-align:right;
+    z-index:10001 !important;
+}
+
+/* ابزارهای پیش‌فرض */
+
+.leaflet-draw{
+    display:none !important;
+}
+
+.leaflet-control-layers{
+    display:none !important;
+}
+
+.leaflet-control{
+    touch-action:manipulation;
+}
+
+
+/* ================================================= */
+/* نوار ابزار پایین: Add Data / Draw / Measure */
+/* ================================================= */
+
+.bottom-tools-control{
+    position:fixed;
+    left:50%;
+    bottom:70px;
+    transform:translateX(-50%);
+    z-index:12000;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    gap:18px;
+    direction:ltr;
+    pointer-events:auto;
+}
+
+.bottom-tool-item{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+}
+
+.bottom-tool-button{
+    width:58px;
+    height:58px;
+    border-radius:50%;
+    border:2px solid rgba(255,255,255,.75);
+    background:rgba(28,33,38,.94);
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:27px;
+    cursor:pointer;
+    box-shadow:0 3px 10px rgba(0,0,0,.42);
+    transition:transform .15s ease,background .15s ease;
+    padding:0;
+}
+
+.bottom-tool-button:active{
+    transform:scale(.92);
+    background:rgba(45,52,60,.98);
+}
+
+.bottom-tool-label{
+    margin-top:5px;
+    color:white;
+    font-family:Arial,sans-serif;
+    font-size:13px;
+    font-weight:bold;
+    text-align:center;
+    white-space:nowrap;
+    text-shadow:0 1px 3px #000;
+    direction:ltr;
+}
+
+.bottom-tool-submenu{
+    display:none;
+    position:absolute;
+    bottom:80px;
+    left:50%;
+    transform:translateX(-50%);
+    width:172px;
+    background:rgba(255,255,255,.98);
+    border-radius:11px;
+    padding:6px;
+    box-shadow:0 3px 14px rgba(0,0,0,.40);
+    direction:rtl;
+}
+
+.bottom-tool-submenu.open{
+    display:block;
+}
+
+.bottom-tool-submenu button{
+    display:block;
+    width:100%;
+    min-height:42px;
+    margin:2px 0;
+    border:0;
+    border-radius:7px;
+    background:#f2f2f2;
+    color:#222;
+    font-family:Arial,sans-serif;
+    font-size:13px;
+    font-weight:bold;
+    text-align:right;
+    padding:7px 10px;
+    cursor:pointer;
+}
+
+.bottom-tool-submenu button:active{
+    background:#ddd;
+}
+
+.draw-submenu{
+    width:180px;
+}
+
+/* ================================================= */
+/* موبایل */
+/* ================================================= */
+
+@media(max-width:600px){
+
+    .group-control{
+        margin-left:5px !important;
+        margin-top:5px !important;
+    }
+
+    .group-main-button{
+        width:44px;
+        height:44px;
+        font-size:19px;
+    }
+
+    .group-menu{
+        width:180px;
+        max-width:calc(100vw - 65px);
+    }
+
+    .category-button{
+        width:100% !important;
+        min-height:44px !important;
+        font-size:14px !important;
+    }
+
+    .group-submenu button{
+        width:160px;
+        min-height:40px;
+        font-size:13px;
+    }
+
+    .map-side-control{
+        margin-top:45px !important;
+        margin-right:5px;
+    }
+
+    .map-side-button{
+        width:42px;
+        height:42px;
+        font-size:20px;
+    }
+
+    .coordinate-info{
+        right:6px;
+        bottom:6px;
+        min-width:145px;
+        font-size:11px;
+        line-height:17px;
+        padding:5px 7px;
+    }
+
+    .route-info-box{
+        font-size:11px;
+        line-height:16px;
+        padding:4px 7px;
+    }
+
+    .routing-popup-button{
+        min-width:70px;
+        padding:9px 8px;
+        font-size:12px;
+    }
+
+    .navigation-message-box{
+        font-size:11px;
+        padding:4px 7px;
+    }
+
+    .leaflet-control-measure{
+        max-width:calc(100vw - 20px);
+    }
+
+    .bottom-tools-control{
+        bottom:68px;
+        gap:11px;
+        width:100%;
+    }
+
+    .bottom-tool-button{
+        width:52px;
+        height:52px;
+        font-size:24px;
+    }
+
+    .bottom-tool-label{
+        font-size:11px;
+        margin-top:4px;
+    }
+
+    .bottom-tool-submenu{
+        bottom:72px;
+        width:165px;
+    }
+
+    .draw-submenu{
+        width:170px;
+    }
+}
+
+</style>
+
+<title>نقشه شهری</title>
+
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<div id="coordinateInfo" class="coordinate-info">
+
+    <div class="coordinate-row">
+        <span class="coordinate-label">E:</span>
+        <span id="utmE" class="coordinate-value">---</span>
+    </div>
+
+    <div class="coordinate-row">
+        <span class="coordinate-label">N:</span>
+        <span id="utmN" class="coordinate-value">---</span>
+    </div>
+
+    <div class="coordinate-row">
+        <span class="coordinate-label">Zone:</span>
+        <span id="utmZone" class="coordinate-value">---</span>
+    </div>
+
+    <div class="coordinate-row">
+        <span class="coordinate-label">Elev:</span>
+        <span id="elevation" class="coordinate-value">---</span>
+        <span> m</span>
+    </div>
+
+</div>
+
+<script src="js/qgis2web_expressions.js"></script>
+<script src="js/leaflet.js"></script>
+<script src="js/L.Control.Layers.Tree.min.js"></script>
+<script src="js/leaflet.rotatedMarker.js"></script>
+<script src="js/leaflet.pattern.js"></script>
+<script src="js/leaflet-hash.js"></script>
+<script src="js/Autolinker.min.js"></script>
+<script src="js/rbush.min.js"></script>
+<script src="js/labelgun.min.js"></script>
+<script src="js/labels.js"></script>
+<script src="js/leaflet-measure.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script src="https://unpkg.com/@tmcw/togeojson@5.8.1/dist/togeojson.umd.js"></script>
+
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
+<script src="data/Lmt1400_3637_1.js"></script>
+<script src="data/TXT1400_3637_2.js"></script>
+
+<script>
+
+/* ================================================= */
+/* MAP */
+/* ================================================= */
+
+var map=L.map('map',{
+    zoomControl:false,
+    maxZoom:28,
+    minZoom:1
+});
+
+var hash=new L.Hash(map);
+
+L.control.zoom({
+    position:'topleft'
+}).addTo(map);
+
+/* ================================================= */
+/* SATELLITE */
+/* ================================================= */
+
+var satellite=L.tileLayer(
+    'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+    {
+        maxZoom:28,
+        maxNativeZoom:19,
+        attribution:''
+    }
+).addTo(map);
+
+/* ================================================= */
+/* AUTOLINKER */
+/* ================================================= */
+
+var autolinker=new Autolinker({
+    truncate:{
+        length:30,
+        location:'smart'
+    }
+});
+
+/* ================================================= */
+/* POPUP */
+/* ================================================= */
+
+function removeEmptyRowsFromPopupContent(content,feature){
+
+    var tempDiv=document.createElement('div');
+
+    tempDiv.innerHTML=content;
+
+    var rows=tempDiv.querySelectorAll('tr');
+
+    for(var i=0;i<rows.length;i++){
+
+        var td=rows[i].querySelector(
+            'td.visible-with-data'
+        );
+
+        var key=td?td.id:'';
+
+        if(
+            td &&
+            td.classList.contains('visible-with-data') &&
+            feature.properties[key]==null
+        ){
+
+            rows[i].parentNode.removeChild(rows[i]);
+
+        }
+
+    }
+
+    return tempDiv.innerHTML;
+}
+
+/* ================================================= */
+/* LMT */
+/* ================================================= */
+
+function pop_Lmt1400_3637_1(feature,layer){
+
+    var popupContent=
+        '<table>'+
+        '<tr><td>'+
+        (
+            feature.properties['F_Class']!==null
+            ?
+            autolinker.link(
+                String(feature.properties['F_Class'])
+            )
+            :
+            ''
+        )+
+        '</td></tr>'+
+        '<tr><td>'+
+        (
+            feature.properties['L_Type']!==null
+            ?
+            autolinker.link(
+                String(feature.properties['L_Type'])
+            )
+            :
+            ''
+        )+
+        '</td></tr>'+
+        '</table>';
+
+    layer.bindPopup(
+        removeEmptyRowsFromPopupContent(
+            popupContent,
+            feature
+        ),
+        {
+            maxHeight:400
+        }
+    );
+
+    layer.on(
+        'click',
+        function(e){
+            L.DomEvent.stopPropagation(e);
+        }
+    );
+}
+
+function style_Lmt1400_3637_1_0(){
+
+    return{
+        color:'rgba(232,113,141,1.0)',
+        weight:1,
+        fillOpacity:0,
+        interactive:true
+    };
+}
+
+var layer_Lmt1400_3637_1=new L.geoJson(
+    json_Lmt1400_3637_1,
+    {
+        interactive:true,
+        onEachFeature:pop_Lmt1400_3637_1,
+        style:style_Lmt1400_3637_1_0
+    }
+).addTo(map);
+
+/* ================================================= */
+/* TXT */
+/* ================================================= */
+
+function pop_TXT1400_3637_2(feature,layer){
+
+    var popupContent=
+        '<table>'+
+        '<tr><td>'+
+        (
+            feature.properties['Name']!==null
+            ?
+            autolinker.link(
+                String(feature.properties['Name'])
+            )
+            :
+            ''
+        )+
+        '</td></tr>'+
+        '<tr><td>'+
+        (
+            feature.properties['Name_Class']!==null
+            ?
+            autolinker.link(
+                String(feature.properties['Name_Class'])
+            )
+            :
+            ''
+        )+
+        '</td></tr>'+
+        '</table>';
+
+    layer.bindPopup(
+        removeEmptyRowsFromPopupContent(
+            popupContent,
+            feature
+        ),
+        {
+            maxHeight:400
+        }
+    );
+
+    layer.on(
+        'click',
+        function(e){
+            L.DomEvent.stopPropagation(e);
+        }
+    );
+}
+
+function style_TXT1400_3637_2_0(){
+
+    return{
+        radius:4,
+        color:'rgba(35,35,35,1.0)',
+        weight:1,
+        fill:true,
+        fillOpacity:1,
+        fillColor:'rgba(231,113,72,1.0)',
+        interactive:true
+    };
+}
+
+var layer_TXT1400_3637_2=new L.geoJson(
+    json_TXT1400_3637_2,
+    {
+        interactive:true,
+        onEachFeature:pop_TXT1400_3637_2,
+
+        pointToLayer:function(feature,latlng){
+
+            return L.circleMarker(
+                latlng,
+                style_TXT1400_3637_2_0()
+            );
+        }
+    }
+).addTo(map);
+
+/* ================================================= */
+/* اندازه‌گیری */
+/* ================================================= */
+
+var measureControl=new L.Control.Measure({
+
+    position:'topright',
+
+    primaryLengthUnit:'meters',
+
+    secondaryLengthUnit:'kilometers',
+
+    primaryAreaUnit:'sqmeters',
+
+    secondaryAreaUnit:'hectares',
+
+    activeColor:'#ff0000',
+
+    completedColor:'#00a000',
+
+    captureZIndex:10000
+
+});
+
+measureControl.addTo(map);
+
+/* ================================================= */
+/* BOUNDS */
+/* ================================================= */
+
+var bounds_group=new L.featureGroup([]);
+
+bounds_group.addLayer(
+    layer_Lmt1400_3637_1
+);
+
+bounds_group.addLayer(
+    layer_TXT1400_3637_2
+);
+
+function setBounds(){
+
+    if(bounds_group.getLayers().length){
+
+        map.fitBounds(
+            bounds_group.getBounds()
+        );
+    }
+}
+
+setBounds();
+
+/* ================================================= */
+/* LAYERS */
+/* ================================================= */
+
+var overlaysTree=[
+
+    {
+        label:
+        '<img src="legend/TXT1400_3637_2.png" /> TXT1400_3637',
+        layer:
+        layer_TXT1400_3637_2
+    },
+
+    {
+        label:
+        '<img src="legend/Lmt1400_3637_1.png" /> Lmt1400_3637',
+        layer:
+        layer_Lmt1400_3637_1
+    },
+
+    {
+        label:'Google Satellite',
+        layer:satellite
+    }
+
+];
+
+var layersControl=L.control.layers.tree(
+    null,
+    overlaysTree,
+    {
+        collapsed:true
+    }
+);
+
+layersControl.addTo(map);
+
+/* ================================================= */
+/* KMZ */
+/* ================================================= */
+
+var kmzLayer=L.geoJSON(
+    null,
+    {
+
+        style:function(){
+
+            return{
+                color:'#ff0000',
+                weight:3,
+                fillColor:'#ffff00',
+                fillOpacity:.25
+            };
+        },
+
+        pointToLayer:function(feature,latlng){
+
+            return L.circleMarker(
+                latlng,
+                {
+                    radius:7,
+                    color:'#ff0000',
+                    weight:2,
+                    fillColor:'#ffff00',
+                    fillOpacity:.8
+                }
+            );
+        },
+
+        onEachFeature:function(feature,layer){
+
+            var name='';
+
+            if(
+                feature.properties &&
+                feature.properties.name
+            ){
+
+                name=feature.properties.name;
+            }
+
+            if(name){
+
+                layer.bindPopup(
+                    '<div class="kmz-info">'+
+                    '<b>نام:</b> '+
+                    name+
+                    '</div>'
+                );
+            }
+
+            layer.on(
+                'click',
+                function(e){
+                    L.DomEvent.stopPropagation(e);
+                }
+            );
+        }
+    }
+).addTo(map);
+
+/* ================================================= */
+/* DRAWN ITEMS */
+/* ================================================= */
+
+var drawnItems=new L.FeatureGroup();
+
+map.addLayer(drawnItems);
+
+var drawControl=new L.Control.Draw({
+
+    position:'topleft',
+
+    draw:{
+
+        polyline:{
+            shapeOptions:{
+                color:'#0066ff',
+                weight:4
+            }
+        },
+
+        polygon:{
+            allowIntersection:false,
+            showArea:true,
+
+            shapeOptions:{
+                color:'#008000',
+                weight:3,
+                fillOpacity:.25
+            }
+        },
+
+        rectangle:false,
+        circle:false,
+        circlemarker:false,
+
+        marker:{
+            icon:new L.Icon.Default()
+        }
+    },
+
+    edit:{
+        featureGroup:drawnItems,
+        remove:true
+    }
+});
+
+/* ================================================= */
+/* CREATED */
+/* ================================================= */
+
+map.on(
+    L.Draw.Event.CREATED,
+    function(event){
+
+        var layer=event.layer;
+
+        drawnItems.addLayer(layer);
+
+        layer.bindPopup(
+            '<div class="kmz-info">'+
+            '<b>عارضه رسم‌شده</b><br>'+
+            'برای خروجی KMZ از بخش ابزارها استفاده کنید.'+
+            '</div>'
+        );
+    }
+);
+
+/* ================================================= */
+/* XML */
+/* ================================================= */
+
+function escapeXml(value){
+
+    return String(value)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&apos;');
+}
+
+/* ================================================= */
+/* GEOJSON TO KML */
+/* ================================================= */
+
+function geoJSONToKML(geojson){
+
+    var kml=
+        '<?xml version="1.0" encoding="UTF-8"?>'+
+        '<kml xmlns="http://www.opengis.net/kml/2.2">'+
+        '<Document>'+
+        '<name>QGIS Web Map Export</name>';
+
+    var features=geojson.features||[];
+
+    features.forEach(function(feature){
+
+        if(!feature.geometry)return;
+
+        var props=feature.properties||{};
+
+        var name=
+            props.name||
+            props.Name||
+            props.NAME||
+            'عارضه';
+
+        kml+=
+            '<Placemark>'+
+            '<name>'+
+            escapeXml(name)+
+            '</name>';
+
+        var geometry=feature.geometry;
+
+        if(geometry.type==='Point'){
+
+            var c=geometry.coordinates;
+
+            kml+=
+                '<Point><coordinates>'+
+                c[0]+','+c[1]+',0'+
+                '</coordinates></Point>';
+        }
+
+        else if(geometry.type==='MultiPoint'){
+
+            geometry.coordinates.forEach(function(c){
+
+                kml+=
+                    '<Point><coordinates>'+
+                    c[0]+','+c[1]+',0'+
+                    '</coordinates></Point>';
+            });
+        }
+
+        else if(geometry.type==='LineString'){
+
+            kml+=
+                '<LineString>'+
+                '<tessellate>1</tessellate>'+
+                '<coordinates>';
+
+            geometry.coordinates.forEach(function(c){
+
+                kml+=c[0]+','+c[1]+',0 ';
+            });
+
+            kml+='</coordinates></LineString>';
+        }
+
+        else if(geometry.type==='MultiLineString'){
+
+            geometry.coordinates.forEach(function(line){
+
+                kml+=
+                    '<LineString>'+
+                    '<tessellate>1</tessellate>'+
+                    '<coordinates>';
+
+                line.forEach(function(c){
+
+                    kml+=c[0]+','+c[1]+',0 ';
+                });
+
+                kml+=
+                    '</coordinates>'+
+                    '</LineString>';
+            });
+        }
+
+        else if(geometry.type==='Polygon'){
+
+            kml+=
+                '<Polygon>'+
+                '<tessellate>1</tessellate>';
+
+            geometry.coordinates.forEach(
+                function(ring,index){
+
+                    kml+=
+                        index===0
+                        ?
+                        '<outerBoundaryIs>'
+                        :
+                        '<innerBoundaryIs>';
+
+                    kml+=
+                        '<LinearRing>'+
+                        '<coordinates>';
+
+                    ring.forEach(function(c){
+
+                        kml+=c[0]+','+c[1]+',0 ';
+                    });
+
+                    kml+=
+                        '</coordinates>'+
+                        '</LinearRing>'+
+                        (
+                            index===0
+                            ?
+                            '</outerBoundaryIs>'
+                            :
+                            '</innerBoundaryIs>'
+                        );
+                }
+            );
+
+            kml+='</Polygon>';
+        }
+
+        else if(geometry.type==='MultiPolygon'){
+
+            geometry.coordinates.forEach(function(polygon){
+
+                kml+=
+                    '<Polygon>'+
+                    '<tessellate>1</tessellate>';
+
+                polygon.forEach(function(ring,index){
+
+                    kml+=
+                        index===0
+                        ?
+                        '<outerBoundaryIs>'
+                        :
+                        '<innerBoundaryIs>';
+
+                    kml+=
+                        '<LinearRing>'+
+                        '<coordinates>';
+
+                    ring.forEach(function(c){
+
+                        kml+=c[0]+','+c[1]+',0 ';
+                    });
+
+                    kml+=
+                        '</coordinates>'+
+                        '</LinearRing>'+
+                        (
+                            index===0
+                            ?
+                            '</outerBoundaryIs>'
+                            :
+                            '</innerBoundaryIs>'
+                        );
+                });
+
+                kml+='</Polygon>';
+            });
+        }
+
+        kml+='</Placemark>';
+    });
+
+    kml+=
+        '</Document>'+
+        '</kml>';
+
+    return kml;
+}
+
+/* ================================================= */
+/* IMPORT KMZ/KML */
+/* ================================================= */
+
+function importKMZFile(file){
+
+    if(!file)return;
+
+    var fileName=file.name.toLowerCase();
+
+    if(
+        !fileName.endsWith('.kmz') &&
+        !fileName.endsWith('.kml')
+    ){
+
+        alert(
+            'لطفاً فایل KMZ یا KML انتخاب کنید.'
+        );
+
+        return;
+    }
+
+    var reader=new FileReader();
+
+    reader.onload=function(e){
+
+        var arrayBuffer=e.target.result;
+
+        if(fileName.endsWith('.kmz')){
+
+            JSZip.loadAsync(arrayBuffer)
+
+            .then(function(zip){
+
+                var kmlFile=null;
+
+                Object.keys(zip.files).forEach(
+                    function(path){
+
+                        if(
+                            !zip.files[path].dir &&
+                            path.toLowerCase().endsWith('.kml') &&
+                            !kmlFile
+                        ){
+
+                            kmlFile=zip.files[path];
+                        }
+                    }
+                );
+
+                if(!kmlFile){
+
+                    throw new Error(
+                        'فایل KML داخل KMZ پیدا نشد.'
+                    );
+                }
+
+                return kmlFile.async('text');
+            })
+
+            .then(function(kmlText){
+
+                parseKML(
+                    kmlText,
+                    file.name
+                );
+            })
+
+            .catch(function(error){
+
+                console.error(error);
+
+                alert(
+                    'خطا در خواندن فایل KMZ.'
+                );
+            });
+
+        }else{
+
+            var decoder=new TextDecoder('utf-8');
+
+            var kmlText=decoder.decode(
+                new Uint8Array(arrayBuffer)
+            );
+
+            parseKML(
+                kmlText,
+                file.name
+            );
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+/* ================================================= */
+/* PARSE KML */
+/* ================================================= */
+
+function parseKML(kmlText,fileName){
+
+    try{
+
+        var parser=new DOMParser();
+
+        var kml=parser.parseFromString(
+            kmlText,
+            'text/xml'
+        );
+
+        var geojson=toGeoJSON.kml(kml);
+
+        if(
+            !geojson ||
+            !geojson.features ||
+            geojson.features.length===0
+        ){
+
+            alert(
+                'در فایل KMZ عارضه قابل نمایش پیدا نشد.'
+            );
+
+            return;
+        }
+
+        kmzLayer.clearLayers();
+
+        kmzLayer.addData(geojson);
+
+        var bounds=kmzLayer.getBounds();
+
+        if(bounds.isValid()){
+
+            map.fitBounds(
+                bounds,
+                {
+                    padding:[40,40]
+                }
+            );
+        }
+
+        alert(
+            'فایل '+
+            fileName+
+            ' با موفقیت وارد شد.\n'+
+            'تعداد عوارض: '+
+            geojson.features.length
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(
+            'خطا در تبدیل KML به نقشه.'
+        );
+    }
+}
+
+/* ================================================= */
+/* EXPORT */
+/* ================================================= */
+
+function collectExportGeoJSON(){
+
+    var features=[];
+
+    kmzLayer.eachLayer(function(layer){
+
+        if(layer.feature){
+
+            features.push(
+                layer.feature
+            );
+        }
+    });
+
+    drawnItems.eachLayer(function(layer){
+
+        var feature=layer.toGeoJSON();
+
+        if(feature){
+
+            if(!feature.properties){
+
+                feature.properties={};
+            }
+
+            if(!feature.properties.name){
+
+                feature.properties.name=
+                    'عارضه رسم‌شده';
+            }
+
+            features.push(feature);
+        }
+    });
+
+    return{
+        type:'FeatureCollection',
+        features:features
+    };
+}
+
+function exportKMZ(){
+
+    var geojson=collectExportGeoJSON();
+
+    if(geojson.features.length===0){
+
+        alert(
+            'هیچ عارضه‌ای برای خروجی وجود ندارد.'
+        );
+
+        return;
+    }
+
+    var kml=geoJSONToKML(geojson);
+
+    var zip=new JSZip();
+
+    zip.file(
+        'doc.kml',
+        kml
+    );
+
+    zip.generateAsync({
+
+        type:'blob',
+
+        mimeType:
+            'application/vnd.google-earth.kmz'
+
+    }).then(function(blob){
+
+        var url=URL.createObjectURL(blob);
+
+        var a=document.createElement('a');
+
+        a.href=url;
+
+        a.download='QGIS_Web_Map.kmz';
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        document.body.removeChild(a);
+
+        setTimeout(function(){
+
+            URL.revokeObjectURL(url);
+
+        },1000);
+    });
+}
+
+function clearKMZ(){
+
+    kmzLayer.clearLayers();
+
+}
+
+function clearDrawnFeatures(){
+
+    drawnItems.clearLayers();
+
+}
+
+/* ================================================= */
+/* GPS */
+/* ================================================= */
+
+var userMarker=null;
+var accuracyCircle=null;
+var watchID=null;
+var lastPosition=null;
+
+var lastElevationRequest=0;
+var currentElevation=null;
+
+/* ================================================= */
+/* ROUTING VARIABLES */
+/* ================================================= */
+
+var liveRouteLayer=null;
+var liveDestinationMarker=null;
+var liveDestination=null;
+var liveRoutingMode=null;
+var liveRouteActive=false;
+var lastRoutePosition=null;
+var lastRouteGeometry=null;
+var isRoutingRequestRunning=false;
+var lastRouteRequestTime=0;
+var routeInfoMarker=null;
+var navigationMessageMarker=null;
+var navigationMessageTimer=null;
+var offRouteCount=0;
+var currentGPSAccuracy=999;
+
+/* ================================================= */
+/* ROUTING SETTINGS */
+/* ================================================= */
+
+var ROUTE_UPDATE_DISTANCE=30;
+var OFF_ROUTE_DISTANCE=25;
+var OFF_ROUTE_CONFIRMATIONS=3;
+var MAX_ACCEPTABLE_GPS_ACCURACY=30;
+var DESTINATION_NEAR_DISTANCE=50;
+var DESTINATION_REACHED_DISTANCE=20;
+var ROUTE_REQUEST_COOLDOWN=5000;
+
+/* ================================================= */
+/* UTM */
+/* ================================================= */
+
+function latLonToUTM(lat,lon){
+
+    var a=6378137.0;
+    var eccSquared=0.00669438;
+    var k0=.9996;
+
+    var LongOrigin;
+    var eccPrimeSquared;
+    var N,T,C,A,M;
+
+    var LatRad=lat*Math.PI/180;
+    var LongRad=lon*Math.PI/180;
+
+    var ZoneNumber=
+        Math.floor((lon+180)/6)+1;
+
+    if(
+        lat>=56 &&
+        lat<64 &&
+        lon>=3 &&
+        lon<12
+    ){
+        ZoneNumber=32;
+    }
+
+    if(lat>=72 && lat<84){
+
+        if(lon>=0 && lon<9)ZoneNumber=31;
+        else if(lon>=9 && lon<21)ZoneNumber=33;
+        else if(lon>=21 && lon<33)ZoneNumber=35;
+        else if(lon>=33 && lon<42)ZoneNumber=37;
+    }
+
+    LongOrigin=
+        (ZoneNumber-1)*6-180+3;
+
+    var LongOriginRad=
+        LongOrigin*Math.PI/180;
+
+    eccPrimeSquared=
+        eccSquared/(1-eccSquared);
+
+    N=
+        a/
+        Math.sqrt(
+            1-
+            eccSquared*
+            Math.sin(LatRad)*
+            Math.sin(LatRad)
+        );
+
+    T=
+        Math.tan(LatRad)*
+        Math.tan(LatRad);
+
+    C=
+        eccPrimeSquared*
+        Math.cos(LatRad)*
+        Math.cos(LatRad);
+
+    A=
+        Math.cos(LatRad)*
+        (LongRad-LongOriginRad);
+
+    M=
+        a*
+        (
+            (1-eccSquared/4-
+             3*eccSquared*eccSquared/64-
+             5*eccSquared*eccSquared*eccSquared/256)
+            *LatRad
+            -
+            (3*eccSquared/8+
+             3*eccSquared*eccSquared/32+
+             45*eccSquared*eccSquared*eccSquared/1024)
+            *Math.sin(2*LatRad)
+            +
+            (15*eccSquared*eccSquared/256+
+             45*eccSquared*eccSquared*eccSquared/1024)
+            *Math.sin(4*LatRad)
+            -
+            (35*eccSquared*eccSquared*eccSquared/3072)
+            *Math.sin(6*LatRad)
+        );
+
+    var UTMEasting=
+        k0*N*
+        (
+            A+
+            (1-T+C)*A*A*A/6+
+            (5-18*T+T*T+
+             72*C-
+             58*eccPrimeSquared)
+            *A*A*A*A*A/120
+        )+
+        500000;
+
+    var UTMNorthing=
+        k0*
+        (
+            M+
+            N*Math.tan(LatRad)*
+            (
+                A*A/2+
+                (5-T+9*C+4*C*C)
+                *A*A*A*A/24+
+                (61-58*T+T*T+
+                 600*C-
+                 330*eccPrimeSquared)
+                *A*A*A*A*A*A/720
+            )
+        );
+
+    if(lat<0){
+
+        UTMNorthing+=10000000;
+    }
+
+    return{
+        easting:UTMEasting,
+        northing:UTMNorthing,
+        zone:
+            ZoneNumber+
+            (lat>=0?'N':'S')
+    };
+}
+
+/* ================================================= */
+/* COORDINATES */
+/* ================================================= */
+
+function updateCoordinateInfo(lat,lon,elevation){
+
+    if(
+        typeof lat!=='number' ||
+        typeof lon!=='number'
+    )return;
+
+    var utm=latLonToUTM(lat,lon);
+
+    document.getElementById('utmE')
+        .textContent=utm.easting.toFixed(2);
+
+    document.getElementById('utmN')
+        .textContent=utm.northing.toFixed(2);
+
+    document.getElementById('utmZone')
+        .textContent=utm.zone;
+
+    if(
+        elevation!==null &&
+        elevation!==undefined &&
+        !isNaN(elevation)
+    ){
+
+        document.getElementById('elevation')
+            .textContent=
+            Number(elevation).toFixed(1);
+    }
+}
+
+/* ================================================= */
+/* ELEVATION */
+/* ================================================= */
+
+function getElevationFromService(lat,lon){
+
+    var now=Date.now();
+
+    if(
+        now-lastElevationRequest<30000
+    )return;
+
+    lastElevationRequest=now;
+
+    fetch(
+        'https://api.open-elevation.com/api/v1/lookup?locations='+
+        lat+','+lon
+    )
+    .then(function(response){
+
+        if(!response.ok){
+
+            throw new Error(
+                'Elevation HTTP '+response.status
+            );
+        }
+
+        return response.json();
+    })
+    .then(function(data){
+
+        if(
+            data &&
+            data.results &&
+            data.results.length
+        ){
+
+            var elevation=
+                data.results[0].elevation;
+
+            if(
+                elevation!==null &&
+                elevation!==undefined
+            ){
+
+                currentElevation=
+                    Number(elevation);
+
+                updateCoordinateInfo(
+                    lat,
+                    lon,
+                    currentElevation
+                );
+            }
+        }
+    })
+    .catch(function(error){
+
+        console.log(
+            'Elevation error:',
+            error
+        );
+    });
+}
+
+/* ================================================= */
+/* BEARING */
+/* ================================================= */
+
+function calculateBearing(
+    lat1,lon1,lat2,lon2
+){
+
+    var dLon=
+        (lon2-lon1)*Math.PI/180;
+
+    var y=
+        Math.sin(dLon)*
+        Math.cos(lat2*Math.PI/180);
+
+    var x=
+        Math.cos(lat1*Math.PI/180)*
+        Math.sin(lat2*Math.PI/180)
+        -
+        Math.sin(lat1*Math.PI/180)*
+        Math.cos(lat2*Math.PI/180)*
+        Math.cos(dLon);
+
+    return(
+        Math.atan2(y,x)*180/Math.PI+
+        360
+    )%360;
+}
+
+/* ================================================= */
+/* USER ICON */
+/* ================================================= */
+
+function createUserIcon(heading){
+
+    return L.divIcon({
+
+        className:'',
+
+        html:
+            '<div class="user-location-marker">'+
+            '<div class="user-location-arrow" '+
+            'style="transform:rotate('+heading+'deg)"></div>'+
+            '<div class="user-location-dot"></div>'+
+            '</div>',
+
+        iconSize:[32,32],
+        iconAnchor:[16,16]
+    });
+}
+
+/* ================================================= */
+/* LIVE GPS */
+/* ================================================= */
+
+function startLiveLocation(){
+
+    if(!navigator.geolocation){
+
+        alert(
+            'GPS این دستگاه پشتیبانی نمی‌شود.'
+        );
+
+        return;
+    }
+
+    watchID=
+        navigator.geolocation.watchPosition(
+
+        function(position){
+
+            var lat=
+                position.coords.latitude;
+
+            var lng=
+                position.coords.longitude;
+
+            var accuracy=
+                position.coords.accuracy;
+
+            currentGPSAccuracy=accuracy;
+
+            var heading=
+                position.coords.heading;
+
+            var gpsAltitude=
+                position.coords.altitude;
+
+            if(
+                gpsAltitude!==null &&
+                !isNaN(gpsAltitude)
+            ){
+
+                currentElevation=
+                    gpsAltitude;
+
+            }else{
+
+                getElevationFromService(
+                    lat,
+                    lng
+                );
+            }
+
+            updateCoordinateInfo(
+                lat,
+                lng,
+                currentElevation
+            );
+
+            if(
+                (
+                    heading===null ||
+                    isNaN(heading)
+                ) &&
+                lastPosition
+            ){
+
+                heading=
+                    calculateBearing(
+                        lastPosition.lat,
+                        lastPosition.lng,
+                        lat,
+                        lng
+                    );
+            }
+
+            if(
+                heading===null ||
+                isNaN(heading)
+            ){
+
+                heading=0;
+            }
+
+            if(userMarker){
+
+                userMarker.setLatLng(
+                    [lat,lng]
+                );
+
+                userMarker.setIcon(
+                    createUserIcon(heading)
+                );
+
+            }else{
+
+                userMarker=
+                    L.marker(
+                        [lat,lng],
+                        {
+                            icon:createUserIcon(heading),
+                            zIndexOffset:1000
+                        }
+                    ).addTo(map);
+
+                userMarker.bindPopup(
+                    '🎯 موقعیت فعلی شما'
+                );
+            }
+
+            if(accuracyCircle){
+
+                accuracyCircle.setLatLng(
+                    [lat,lng]
+                );
+
+                accuracyCircle.setRadius(
+                    accuracy
+                );
+
+            }else{
+
+                accuracyCircle=
+                    L.circle(
+                        [lat,lng],
+                        {
+                            radius:accuracy,
+                            className:'user-accuracy'
+                        }
+                    ).addTo(map);
+            }
+
+            map._userLocation=
+                L.latLng(lat,lng);
+
+            if(liveRouteActive){
+
+                updateLiveNavigation();
+            }
+
+            lastPosition={
+                lat:lat,
+                lng:lng
+            };
+
+        },
+
+        function(error){
+
+            console.log(
+                'GPS Error:',
+                error
+            );
+        },
+
+        {
+            enableHighAccuracy:true,
+            maximumAge:1000,
+            timeout:10000
+        }
+    );
+}
+
+startLiveLocation();
+
+/* ================================================= */
+/* MY LOCATION */
+/* ================================================= */
+
+function goToMyLocation(){
+
+    if(!map._userLocation){
+
+        alert(
+            'در حال دریافت موقعیت شما...'
+        );
+
+        return;
+    }
+
+    map.setView(
+        map._userLocation,
+        18
+    );
+}
+
+/* ================================================= */
+/* COMPASS */
+/* ================================================= */
+
+var compassHeading=0;
+
+function updateCompassButton(){
+
+    var button=
+        document.getElementById(
+            'compassButton'
+        );
+
+    if(!button)return;
+
+    button.innerHTML='🧭';
+
+    button.title='جهت جغرافیایی';
+
+    button.setAttribute(
+        'data-heading',
+        Math.round(compassHeading)
+    );
+}
+
+function startCompass(){
+
+    if(
+        typeof DeviceOrientationEvent!=='undefined' &&
+        typeof DeviceOrientationEvent.requestPermission==='function'
+    ){
+
+        DeviceOrientationEvent
+            .requestPermission()
+            .then(function(permission){
+
+                if(permission==='granted'){
+
+                    window.addEventListener(
+                        'deviceorientation',
+                        handleOrientation,
+                        true
+                    );
+
+                }else{
+
+                    alert(
+                        'اجازه دسترسی به جهت‌یابی داده نشد.'
+                    );
+                }
+            })
+            .catch(function(error){
+
+                console.log(error);
+            });
+
+    }else{
+
+        window.addEventListener(
+            'deviceorientationabsolute',
+            handleOrientation,
+            true
+        );
+
+        window.addEventListener(
+            'deviceorientation',
+            handleOrientation,
+            true
+        );
+    }
+}
+
+function handleOrientation(event){
+
+    var heading=null;
+
+    if(
+        event.absolute===true &&
+        event.alpha!==null
+    ){
+
+        heading=360-event.alpha;
+    }
+
+    if(
+        event.webkitCompassHeading!==undefined &&
+        event.webkitCompassHeading!==null
+    ){
+
+        heading=
+            event.webkitCompassHeading;
+    }
+
+    if(
+        heading===null ||
+        isNaN(heading)
+    )return;
+
+    compassHeading=
+        (heading+360)%360;
+
+    updateCompassButton();
+}
+
+/* ================================================= */
+/* DISTANCE POINT TO SEGMENT */
+/* ================================================= */
+
+function distancePointToSegment(p,a,b){
+
+    var latRad=
+        p.lat*Math.PI/180;
+
+    var metersPerLat=111320;
+
+    var metersPerLng=
+        111320*Math.cos(latRad);
+
+    var px=p.lng*metersPerLng;
+    var py=p.lat*metersPerLat;
+
+    var ax=a.lng*metersPerLng;
+    var ay=a.lat*metersPerLat;
+
+    var bx=b.lng*metersPerLng;
+    var by=b.lat*metersPerLat;
+
+    var dx=bx-ax;
+    var dy=by-ay;
+
+    if(dx===0 && dy===0){
+
+        return Math.sqrt(
+            Math.pow(px-ax,2)+
+            Math.pow(py-ay,2)
+        );
+    }
+
+    var t=
+        (
+            (px-ax)*dx+
+            (py-ay)*dy
+        )/
+        (
+            dx*dx+
+            dy*dy
+        );
+
+    t=Math.max(0,Math.min(1,t));
+
+    var closestX=ax+t*dx;
+    var closestY=ay+t*dy;
+
+    return Math.sqrt(
+        Math.pow(px-closestX,2)+
+        Math.pow(py-closestY,2)
+    );
+}
+
+/* ================================================= */
+/* DISTANCE TO ROUTE */
+/* ================================================= */
+
+function distanceFromGeoJSONRoute(
+    point,
+    geometry
+){
+
+    if(
+        !geometry ||
+        !geometry.coordinates
+    ){
+
+        return Infinity;
+    }
+
+    var coordinates=
+        geometry.coordinates;
+
+    var minimum=Infinity;
+
+    for(
+        var i=0;
+        i<coordinates.length-1;
+        i++
+    ){
+
+        var a=L.latLng(
+            coordinates[i][1],
+            coordinates[i][0]
+        );
+
+        var b=L.latLng(
+            coordinates[i+1][1],
+            coordinates[i+1][0]
+        );
+
+        var distance=
+            distancePointToSegment(
+                point,
+                a,
+                b
+            );
+
+        if(distance<minimum){
+
+            minimum=distance;
+        }
+    }
+
+    return minimum;
+}
+
+/* ================================================= */
+/* NAVIGATION MESSAGE */
+/* ================================================= */
+
+function showNavigationMessage(
+    message,
+    duration
+){
+
+    if(navigationMessageTimer){
+
+        clearTimeout(
+            navigationMessageTimer
+        );
+
+        navigationMessageTimer=null;
+    }
+
+    if(navigationMessageMarker){
+
+        map.removeLayer(
+            navigationMessageMarker
+        );
+
+        navigationMessageMarker=null;
+    }
+
+    if(!message)return;
+
+    var position=
+        map._userLocation||
+        liveDestination;
+
+    if(!position)return;
+
+    var icon=L.divIcon({
+
+        className:
+            'navigation-message-label',
+
+        html:
+            '<div class="navigation-message-box">'+
+            message+
+            '</div>',
+
+        iconSize:[160,38],
+        iconAnchor:[80,50]
+    });
+
+    navigationMessageMarker=
+        L.marker(
+            position,
+            {
+                icon:icon,
+                interactive:false,
+                zIndexOffset:2000
+            }
+        ).addTo(map);
+
+    navigationMessageTimer=
+        setTimeout(function(){
+
+            if(navigationMessageMarker){
+
+                map.removeLayer(
+                    navigationMessageMarker
+                );
+
+                navigationMessageMarker=null;
+            }
+
+        },duration||1800);
+}
+
+/* ================================================= */
+/* CLEAR ROUTE */
+/* ================================================= */
+
+function clearCurrentRoute(){
+
+    if(liveRouteLayer){
+
+        map.removeLayer(
+            liveRouteLayer
+        );
+
+        liveRouteLayer=null;
+    }
+
+    if(liveDestinationMarker){
+
+        map.removeLayer(
+            liveDestinationMarker
+        );
+
+        liveDestinationMarker=null;
+    }
+
+    if(routeInfoMarker){
+
+        map.removeLayer(
+            routeInfoMarker
+        );
+
+        routeInfoMarker=null;
+    }
+
+    if(navigationMessageMarker){
+
+        map.removeLayer(
+            navigationMessageMarker
+        );
+
+        navigationMessageMarker=null;
+    }
+
+    if(navigationMessageTimer){
+
+        clearTimeout(
+            navigationMessageTimer
+        );
+
+        navigationMessageTimer=null;
+    }
+
+    lastRouteGeometry=null;
+    lastRoutePosition=null;
+    offRouteCount=0;
+}
+
+/* ================================================= */
+/* SELECT ROUTING MODE */
+/* ================================================= */
+
+function selectRoutingMode(mode){
+
+    if(!map._userLocation){
+
+        alert(
+            'هنوز موقعیت GPS دریافت نشده است.'
+        );
+
+        return;
+    }
+
+    if(!liveDestination)return;
+
+    liveRoutingMode=mode;
+    liveRouteActive=true;
+    lastRoutePosition=null;
+    lastRouteGeometry=null;
+    offRouteCount=0;
+    isRoutingRequestRunning=false;
+    lastRouteRequestTime=0;
+
+    if(liveDestinationMarker){
+
+        liveDestinationMarker.closePopup();
+    }
+
+    calculateLiveRoute(true);
+}
+
+/* ================================================= */
+/* MAP CLICK - DESTINATION */
+/* ================================================= */
+
+map.on(
+    'click',
+    function(e){
+
+        /*
+         * اگر ابزار اندازه‌گیری فعال است،
+         * این کلیک نباید مقصد مسیر شود.
+         */
+
+        var measureInteraction=
+            document.querySelector(
+                '.leaflet-control-measure-interaction'
+            );
+
+        if(
+            measureInteraction &&
+            measureInteraction.offsetParent!==null
+        ){
+
+            return;
+        }
+
+        if(!map._userLocation){
+
+            alert(
+                'هنوز موقعیت GPS دریافت نشده است.'
+            );
+
+            return;
+        }
+
+        liveRouteActive=false;
+        liveRoutingMode=null;
+
+        clearCurrentRoute();
+
+        liveDestination=e.latlng;
+
+        liveDestinationMarker=
+            L.marker(
+                liveDestination
+            ).addTo(map);
+
+        liveDestinationMarker.bindPopup(
+
+            '<div class="routing-popup">'+
+
+            '<div class="routing-popup-title">'+
+            '🏁 انتخاب نوع مسیر'+
+            '</div>'+
+
+            '<div class="routing-popup-buttons">'+
+
+            '<button '+
+            'class="routing-popup-button routing-car" '+
+            'onclick="selectRoutingMode(\'driving\')">'+
+            '🚗 خودرو'+
+            '</button>'+
+
+            '<button '+
+            'class="routing-popup-button routing-foot" '+
+            'onclick="selectRoutingMode(\'foot\')">'+
+            '🚶 پیاده'+
+            '</button>'+
+
+            '</div>'+
+
+            '</div>',
+
+            {
+                closeButton:true,
+                autoClose:false
+            }
+        );
+
+        liveDestinationMarker.openPopup();
+    }
+);
+
+/* ================================================= */
+/* CALCULATE ROUTE */
+/* ================================================= */
+
+function calculateLiveRoute(firstRoute){
+
+    if(
+        !liveRouteActive ||
+        !liveDestination ||
+        !map._userLocation ||
+        isRoutingRequestRunning
+    ){
+
+        return;
+    }
+
+    var now=Date.now();
+
+    if(
+        !firstRoute &&
+        now-lastRouteRequestTime<
+        ROUTE_REQUEST_COOLDOWN
+    ){
+
+        return;
+    }
+
+    if(
+        !firstRoute &&
+        currentGPSAccuracy>
+        MAX_ACCEPTABLE_GPS_ACCURACY
+    ){
+
+        return;
+    }
+
+    isRoutingRequestRunning=true;
+    lastRouteRequestTime=now;
+
+    var start=L.latLng(
+        map._userLocation.lat,
+        map._userLocation.lng
+    );
+
+    var end=liveDestination;
+
+    var profile;
+    var server;
+
+    if(liveRoutingMode==='driving'){
+
+        profile='driving';
+
+        server=
+            'https://routing.openstreetmap.de/routed-car';
+
+    }else{
+
+        profile='foot';
+
+        server=
+            'https://routing.openstreetmap.de/routed-foot';
+    }
+
+    var url=
+        server+
+        '/route/v1/'+
+        profile+'/' +
+        start.lng+','+
+        start.lat+';'+
+        end.lng+','+
+        end.lat+
+        '?overview=full&geometries=geojson';
+
+    fetch(url)
+
+    .then(function(response){
+
+        if(!response.ok){
+
+            throw new Error(
+                'HTTP '+response.status
+            );
+        }
+
+        return response.json();
+    })
+
+    .then(function(data){
+
+        isRoutingRequestRunning=false;
+
+        if(!liveRouteActive)return;
+
+        if(
+            !data.routes ||
+            data.routes.length===0
+        ){
+
+            alert(
+                'برای این مقصد مسیر پیدا نشد.'
+            );
+
+            return;
+        }
+
+        var route=data.routes[0];
+
+        lastRouteGeometry=route.geometry;
+
+        lastRoutePosition=
+            L.latLng(
+                start.lat,
+                start.lng
+            );
+
+        offRouteCount=0;
+
+        if(liveRouteLayer){
+
+            map.removeLayer(
+                liveRouteLayer
+            );
+
+            liveRouteLayer=null;
+        }
+
+        if(routeInfoMarker){
+
+            map.removeLayer(
+                routeInfoMarker
+            );
+
+            routeInfoMarker=null;
+        }
+
+        liveRouteLayer=
+            L.geoJSON(
+                route.geometry,
+                {
+                    style:{
+                        weight:6,
+                        opacity:.85
+                    }
+                }
+            ).addTo(map);
+
+        var distance=
+            route.distance/1000;
+
+        var duration=
+            Math.round(
+                route.duration/60
+            );
+
+        var modeName=
+            liveRoutingMode==='driving'
+            ?
+            '🚗 خودرو'
+            :
+            '🚶 پیاده';
+
+        var coordinates=
+            route.geometry.coordinates;
+
+        if(
+            coordinates &&
+            coordinates.length>0
+        ){
+
+            var middleIndex=
+                Math.floor(
+                    coordinates.length/2
+                );
+
+            var middleCoordinate=
+                coordinates[middleIndex];
+
+            var routeInfoIcon=
+                L.divIcon({
+
+                    className:
+                        'route-info-label',
+
+                    html:
+                        '<div class="route-info-box">'+
+                        modeName+
+                        '<br>'+
+                        '📏 '+
+                        distance.toFixed(2)+
+                        ' km'+
+                        ' &nbsp; | &nbsp; '+
+                        '⏱ '+
+                        duration+
+                        ' دقیقه'+
+                        '</div>',
+
+                    iconSize:[150,58],
+                    iconAnchor:[75,29]
+                });
+
+            routeInfoMarker=
+                L.marker(
+                    [
+                        middleCoordinate[1],
+                        middleCoordinate[0]
+                    ],
+                    {
+                        icon:routeInfoIcon,
+                        interactive:false,
+                        zIndexOffset:1000
+                    }
+                ).addTo(map);
+        }
+
+        if(firstRoute){
+
+            map.fitBounds(
+                liveRouteLayer.getBounds(),
+                {
+                    padding:[50,50]
+                }
+            );
+
+        }else{
+
+            showNavigationMessage(
+                '✅ مسیر جدید محاسبه شد',
+                1800
+            );
+        }
+    })
+
+    .catch(function(error){
+
+        isRoutingRequestRunning=false;
+
+        console.log(
+            'Smart routing error:',
+            error
+        );
+
+        if(firstRoute){
+
+            alert(
+                'خطا در دریافت مسیر.\n'+
+                'لطفاً دوباره امتحان کنید.'
+            );
+        }
+    });
+}
+
+/* ================================================= */
+/* LIVE NAVIGATION */
+/* ================================================= */
+
+function updateLiveNavigation(){
+
+    if(
+        !liveRouteActive ||
+        !map._userLocation ||
+        !liveDestination
+    ){
+
+        return;
+    }
+
+    var current=
+        map._userLocation;
+
+    var distanceToDestination=
+        map.distance(
+            current,
+            liveDestination
+        );
+
+    /* رسیدن */
+
+    if(
+        distanceToDestination<=
+        DESTINATION_REACHED_DISTANCE
+    ){
+
+        liveRouteActive=false;
+
+        if(liveRouteLayer){
+
+            liveRouteLayer.setStyle({
+                opacity:.45
+            });
+        }
+
+        if(routeInfoMarker){
+
+            map.removeLayer(
+                routeInfoMarker
+            );
+
+            routeInfoMarker=null;
+        }
+
+        showNavigationMessage(
+            '✅ به مقصد رسیدید',
+            4000
+        );
+
+        return;
+    }
+
+    /* نزدیک مقصد */
+
+    if(
+        distanceToDestination<=
+        DESTINATION_NEAR_DISTANCE
+    ){
+
+        showNavigationMessage(
+            '📍 به مقصد نزدیک شدید',
+            1800
+        );
+    }
+
+    /* مسیر وجود ندارد */
+
+    if(!lastRouteGeometry){
+
+        calculateLiveRoute(false);
+
+        return;
+    }
+
+    /* دقت GPS نامناسب */
+
+    if(
+        currentGPSAccuracy>
+        MAX_ACCEPTABLE_GPS_ACCURACY
+    ){
+
+        return;
+    }
+
+    /* حرکت حداقل 30 متر */
+
+    if(lastRoutePosition){
+
+        var moved=
+            map.distance(
+                lastRoutePosition,
+                current
+            );
+
+        if(
+            moved<
+            ROUTE_UPDATE_DISTANCE
+        ){
+
+            return;
+        }
+    }
+
+    /* فاصله از مسیر */
+
+    var distanceFromRoute=
+        distanceFromGeoJSONRoute(
+            current,
+            lastRouteGeometry
+        );
+
+    /* روی مسیر */
+
+    if(
+        distanceFromRoute<=
+        OFF_ROUTE_DISTANCE
+    ){
+
+        offRouteCount=0;
+
+        lastRoutePosition=
+            L.latLng(
+                current.lat,
+                current.lng
+            );
+
+        return;
+    }
+
+    /* احتمال خروج */
+
+    offRouteCount++;
+
+    showNavigationMessage(
+        '🔄 بررسی مسیر...',
+        1200
+    );
+
+    if(
+        offRouteCount<
+        OFF_ROUTE_CONFIRMATIONS
+    ){
+
+        lastRoutePosition=
+            L.latLng(
+                current.lat,
+                current.lng
+            );
+
+        return;
+    }
+
+    /* خروج قطعی */
+
+    offRouteCount=0;
+
+    lastRoutePosition=
+        L.latLng(
+            current.lat,
+            current.lng
+        );
+
+    showNavigationMessage(
+        '🔄 در حال اصلاح مسیر...',
+        2500
+    );
+
+    calculateLiveRoute(false);
+}
+
+/* ================================================= */
+/* STOP ROUTE */
+/* ================================================= */
+
+function stopLiveRoute(){
+
+    liveRouteActive=false;
+    liveRoutingMode=null;
+    liveDestination=null;
+    lastRoutePosition=null;
+    lastRouteGeometry=null;
+    offRouteCount=0;
+    isRoutingRequestRunning=false;
+
+    clearCurrentRoute();
+}
+
+/* ================================================= */
+/* DRAW FUNCTIONS */
+/* ================================================= */
+
+function startDrawMarker(){
+
+    new L.Draw.Marker(
+        map,
+        drawControl.options.draw.marker
+    ).enable();
+}
+
+function startDrawPolyline(){
+
+    new L.Draw.Polyline(
+        map,
+        drawControl.options.draw.polyline
+    ).enable();
+}
+
+function startDrawPolygon(){
+
+    new L.Draw.Polygon(
+        map,
+        drawControl.options.draw.polygon
+    ).enable();
+}
+
+function editDrawnFeatures(){
+
+    if(
+        drawnItems.getLayers().length===0
+    ){
+
+        alert(
+            'عارضه‌ای برای ویرایش وجود ندارد.'
+        );
+
+        return;
+    }
+
+    new L.EditToolbar.Edit(
+        map,
+        {
+            featureGroup:drawnItems
+        }
+    ).enable();
+}
+
+function deleteDrawnFeatures(){
+
+    if(
+        drawnItems.getLayers().length===0
+    ){
+
+        alert(
+            'عارضه‌ای برای حذف وجود ندارد.'
+        );
+
+        return;
+    }
+
+    new L.EditToolbar.Delete(
+        map,
+        {
+            featureGroup:drawnItems
+        }
+    ).enable();
+}
+
+/* ================================================= */
+/* RIGHT CONTROL */
+/* ================================================= */
+
+var mapSideControl=L.control({
+    position:'topright'
+});
+
+mapSideControl.onAdd=function(){
+
+    var div=L.DomUtil.create(
+        'div',
+        'leaflet-control map-side-control'
+    );
+
+    div.innerHTML=
+
+        '<button '+
+        'id="compassButton" '+
+        'class="map-side-button" '+
+        'title="جهت جغرافیایی">'+
+        '🧭'+
+        '</button>'+
+
+        '<button '+
+        'id="myLocationSideButton" '+
+        'class="map-side-button" '+
+        'title="موقعیت من">'+
+        '🎯'+
+        '</button>'+
+
+        '<button '+
+        'id="measureSideButton" '+
+        'class="map-side-button" '+
+        'title="اندازه‌گیری">'+
+        '📏'+
+        '</button>';
+
+    L.DomEvent.disableClickPropagation(div);
+
+    return div;
+};
+
+mapSideControl.addTo(map);
+
+/* ================================================= */
+/* RIGHT BUTTONS */
+/* ================================================= */
+
+document.getElementById(
+    'compassButton'
+).onclick=function(){
+
+    startCompass();
+};
+
+document.getElementById(
+    'myLocationSideButton'
+).onclick=function(){
+
+    goToMyLocation();
+};
+
+/*
+ * دکمه اختصاصی اندازه‌گیری
+ */
+
+document.getElementById(
+    'measureSideButton'
+).onclick=function(){
+
+    var button=
+        document.querySelector(
+            '.leaflet-control-measure-toggle'
+        );
+
+    if(!button){
+
+        alert(
+            'ابزار اندازه‌گیری بارگذاری نشده است.'
+        );
+
+        return;
+    }
+
+    button.click();
+};
+
+/* ================================================= */
+/* MAIN MENU - فقط پایان مسیر */
+/* ================================================= */
+
+var groupControl=L.control({
+    position:'topleft'
+});
+
+groupControl.onAdd=function(){
+
+    var div=L.DomUtil.create(
+        'div',
+        'leaflet-control group-control'
+    );
+
+    div.innerHTML=
+
+        '<button '+
+        'id="groupMainButton" '+
+        'class="group-main-button" '+
+        'title="منوی نقشه">'+
+        '☰'+
+        '</button>'+
+
+        '<div id="groupMenu" class="group-menu">'+
+
+        '<button '+
+        'id="locationCategoryButton" '+
+        'class="category-button">'+
+        '🧭 موقعیت و نقشه'+
+        '</button>'+
+
+        '<div '+
+        'id="locationSubmenu" '+
+        'class="group-submenu">'+
+
+        '<button id="stopLiveRouteButton2">'+
+        '⛔ پایان مسیر'+
+        '</button>'+
+
+        '</div>'+
+        '</div>';
+
+    L.DomEvent.disableClickPropagation(div);
+
+    return div;
+};
+
+groupControl.addTo(map);
+
+function closeSubmenus(){
+
+    document.querySelectorAll(
+        '.group-submenu'
+    ).forEach(function(el){
+
+        el.classList.remove('open');
+    });
+}
+
+document.getElementById(
+    'groupMainButton'
+).onclick=function(){
+
+    var menu=document.getElementById('groupMenu');
+    menu.classList.toggle('open');
+};
+
+document.getElementById(
+    'locationCategoryButton'
+).onclick=function(){
+
+    var submenu=document.getElementById('locationSubmenu');
+    var wasOpen=submenu.classList.contains('open');
+
+    closeSubmenus();
+
+    if(!wasOpen){
+        submenu.classList.add('open');
+    }
+};
+
+document.getElementById(
+    'stopLiveRouteButton2'
+).onclick=function(){
+
+    stopLiveRoute();
+};
+
+/* ================================================= */
+/* BOTTOM TOOLS - Add Data / Draw / Measure */
+/* ================================================= */
+
+var bottomTools=document.createElement('div');
+bottomTools.className='bottom-tools-control';
+bottomTools.id='bottomToolsControl';
+
+bottomTools.innerHTML=
+
+    '<div class="bottom-tool-item">'+
+        '<div id="addDataSubmenu" class="bottom-tool-submenu">'+
+            '<button id="importKMZBottomButton">📂 ورود KMZ / KML</button>'+
+            '<button id="exportKMZBottomButton">📤 خروجی KMZ</button>'+
+            '<button id="clearKMZBottomButton">🗑️ پاک کردن KMZ</button>'+
+        '</div>'+
+        '<button id="addDataBottomButton" class="bottom-tool-button" title="Add Data">📂</button>'+
+        '<div class="bottom-tool-label">Add Data</div>'+
+    '</div>'+
+
+    '<div class="bottom-tool-item">'+
+        '<div id="drawSubmenu" class="bottom-tool-submenu draw-submenu">'+
+            '<button id="drawMarkerBottomButton">📍 رسم نقطه</button>'+
+            '<button id="drawLineBottomButton">📏 رسم خط</button>'+
+            '<button id="drawPolygonBottomButton">⬟ رسم پلیگون</button>'+
+            '<button id="editDrawBottomButton">✏️ ویرایش</button>'+
+            '<button id="deleteDrawBottomButton">❌ حذف انتخابی</button>'+
+            '<button id="clearDrawBottomButton">🗑️ پاک کردن همه</button>'+
+        '</div>'+
+        '<button id="drawBottomButton" class="bottom-tool-button" title="Draw">✏️</button>'+
+        '<div class="bottom-tool-label">Draw</div>'+
+    '</div>'+
+
+    '<div class="bottom-tool-item">'+
+        '<button id="measureBottomButton" class="bottom-tool-button" title="Measure">📏</button>'+
+        '<div class="bottom-tool-label">Measure</div>'+
+    '</div>'+
+
+    '<input type="file" id="kmzFileInput" class="kmz-file-input" '+
+    'accept=".kmz,.kml,application/vnd.google-earth.kml+xml,application/vnd.google-earth.kmz">';
+
+document.body.appendChild(bottomTools);
+
+function closeAllToolMenus(){
+
+    document.querySelectorAll(
+        '.bottom-tool-submenu'
+    ).forEach(function(menu){
+
+        menu.classList.remove('open');
+    });
+}
+
+function toggleToolSubmenu(id){
+
+    var submenu=document.getElementById(id);
+
+    if(!submenu)return;
+
+    var wasOpen=submenu.classList.contains('open');
+
+    closeAllToolMenus();
+
+    if(!wasOpen){
+        submenu.classList.add('open');
+    }
+}
+
+function activateMeasureTool(){
+
+    closeAllToolMenus();
+
+    var button=document.querySelector(
+        '.leaflet-control-measure-toggle'
+    );
+
+    if(!button){
+        alert('ابزار اندازه‌گیری بارگذاری نشده است.');
+        return;
+    }
+
+    button.click();
+}
+
+/* جلوگیری از اثر کلیک ابزارها روی خود نقشه */
+L.DomEvent.disableClickPropagation(bottomTools);
+L.DomEvent.disableScrollPropagation(bottomTools);
+
+/* Add Data */
+document.getElementById('addDataBottomButton').onclick=function(){
+    toggleToolSubmenu('addDataSubmenu');
+};
+
+document.getElementById('importKMZBottomButton').onclick=function(){
+    closeAllToolMenus();
+    document.getElementById('kmzFileInput').click();
+};
+
+document.getElementById('kmzFileInput').addEventListener(
+    'change',
+    function(e){
+        var file=e.target.files[0];
+        importKMZFile(file);
+        e.target.value='';
+    }
+);
+
+document.getElementById('exportKMZBottomButton').onclick=function(){
+    closeAllToolMenus();
+    exportKMZ();
+};
+
+document.getElementById('clearKMZBottomButton').onclick=function(){
+    closeAllToolMenus();
+    if(confirm('عوارض واردشده از KMZ پاک شوند؟')){
+        clearKMZ();
+    }
+};
+
+/* Draw */
+document.getElementById('drawBottomButton').onclick=function(){
+    toggleToolSubmenu('drawSubmenu');
+};
+
+document.getElementById('drawMarkerBottomButton').onclick=function(){
+    closeAllToolMenus();
+    startDrawMarker();
+};
+
+document.getElementById('drawLineBottomButton').onclick=function(){
+    closeAllToolMenus();
+    startDrawPolyline();
+};
+
+document.getElementById('drawPolygonBottomButton').onclick=function(){
+    closeAllToolMenus();
+    startDrawPolygon();
+};
+
+document.getElementById('editDrawBottomButton').onclick=function(){
+    closeAllToolMenus();
+    editDrawnFeatures();
+};
+
+document.getElementById('deleteDrawBottomButton').onclick=function(){
+    closeAllToolMenus();
+    deleteDrawnFeatures();
+};
+
+document.getElementById('clearDrawBottomButton').onclick=function(){
+    closeAllToolMenus();
+    if(confirm('تمام عوارض رسم‌شده پاک شوند؟')){
+        clearDrawnFeatures();
+    }
+};
+
+/* Measure */
+document.getElementById('measureBottomButton').onclick=function(){
+    activateMeasureTool();
+};
+
+/* اگر منوی اصلی باز است، کلیک دوباره روی نقشه آن را می‌بندد. */
+map.on('click',function(){
+    closeAllToolMenus();
+});
+
+</script>
+
+</body>
+</html>
